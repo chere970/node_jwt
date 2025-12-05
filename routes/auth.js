@@ -29,6 +29,17 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not configured');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
@@ -41,7 +52,8 @@ router.post('/login', async (req, res) => {
 
     res.json({ token });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', err); // Log the actual error for debugging
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
